@@ -3,48 +3,51 @@
 #define int long long
 #define endl "\n"
 using namespace std;
-const int N = 60005;
-int n, lim, q, dat[N << 2], tg[N << 2];
-inline void pushup(int p){dat[p] = max(dat[p << 1], dat[p << 1 | 1]);}
-inline void pushdown(int p, int l, int r){
-	if (tg[p]){
-		dat[p << 1] += tg[p]; dat[p << 1 | 1] += tg[p];
-		tg[p << 1] += tg[p]; tg[p << 1 | 1] += tg[p];
-		tg[p] = 0;
-	}
+int n,s,q;
+struct Node{int val;int laz;}segTree[240005];
+inline void pushup(int p){segTree[p].val=max(segTree[p*2].val,segTree[p*2+1].val);}
+inline void pushdown(int p,int l,int r){
+    if(segTree[p].laz){
+        segTree[p*2].val+=segTree[p].laz;
+        segTree[p*2+1].val+=segTree[p].laz;
+        segTree[p*2].laz+=segTree[p].laz;
+        segTree[p*2+1].laz+=segTree[p].laz;
+        segTree[p].laz=0;
+    }
 }
-void update(int p, int l, int r, int lpos, int rpos, int k){
-	if (l > rpos || r < lpos) return;
-	if (lpos <= l && r <= rpos){
-		dat[p] += k;
-		tg[p] += k;
-		return;
-	} 
-	pushdown(p, l, r);
-	int mid = (l + r) >> 1;
-	update(p << 1, l, mid, lpos, rpos, k); update(p << 1 | 1, mid + 1, r, lpos, rpos, k);
-	pushup(p); 
-} 
-int query(int p, int l, int r, int lpos, int rpos){
-	if (l > rpos || r < lpos) return -2e9;
-	if (lpos <= l && r <= rpos) return dat[p];
-	pushdown(p, l, r);
-	int mid = (l + r) >> 1;
-	return max(query(p << 1, l, mid, lpos, rpos), query(p << 1 | 1, mid + 1, r, lpos, rpos)); 
+void update(int p,int l,int r,int lpos,int rpos,int k){
+    if(l>rpos||r<lpos)return;
+    if(lpos<=l&&r<=rpos){
+        segTree[p].val+=k;
+        segTree[p].laz+=k;
+        return;
+    }
+    pushdown(p,l,r);
+    int mid=(l+r)/2;
+    update(p*2,l,mid,lpos,rpos,k);
+    update(p*2+1,mid+1,r,lpos,rpos,k);
+    pushup(p);
 }
-signed main() {
+int query(int p,int l,int r,int lpos,int rpos){
+    if(l>rpos||r<lpos)return -2e9;
+    if(lpos<=l&&r<=rpos)return segTree[p].val;
+    pushdown(p,l,r);
+    int mid=(l+r)/2;
+    return max(query(p*2,l,mid,lpos,rpos),query(p*2+1,mid+1,r,lpos,rpos));
+}
+signed main(){
     ios::sync_with_stdio(0);
     cin.tie(0);
-	scanf("%d%d%d", &n, &lim, &q);
-	while (q--){
+    cin>>n>>s>>q;
+    while(q--){
         int l,r,x;
-		scanf("%d%d%d", &l, &r, &x);
-		update(1, 1, n, l, r - 1, x);
-		if (query(1, 1, n, l, r - 1) > lim){
-			update(1, 1, n, l, r - 1, -x);
-			printf("N\n");
-		}
-		else printf("T\n");
-	}
+        cin >> l >> r >> x;
+        update(1,1,n,l,r-1,x);
+        if(query(1,1,n,l,r-1)>s){
+            update(1,1,n,l,r-1,-x);
+            cout << "N" << endl;
+        }
+        else cout << "T" << endl;
+    }
     return 0;
 }
