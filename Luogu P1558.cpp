@@ -7,37 +7,42 @@ using namespace std;
 //int maxn=INT_MIN;
 //int minn=INT_MAX;
 int l,t,q;
-struct segTree{int val,sum;bool laz;}segTree[400005];
+struct segTree{int val,laz;}segTree[400005];
 void build(int l,int r,int now) {
-    segTree[now].val=segTree[now].sum=1;
-    if(l==r) return ;
+    if(l==r) {segTree[now].val=(1<<1);return ;}
     int mid=(l+r)/2;
     build(l,mid,now*2);
     build(mid+1,r,now*2+1);
+    segTree[now].val=segTree[now*2].val|segTree[now*2+1].val;
 }
 void pushdown(int now) {
     if(!segTree[now].laz) return ;
     segTree[now*2].laz=segTree[now*2+1].laz=segTree[now].laz;
-    segTree[now*2].val=segTree[now*2+1].val=segTree[now].val;
+    segTree[now*2].val=segTree[now*2+1].val=(1<<segTree[now].laz);
     segTree[now].laz=0;
-}
-void pushup(int now) {
-    
 }
 void update(int l,int r,int ll,int rr,int now,int c) {
     if(l>rr||r<ll) return ;
     if(l>=ll&&r<=rr) {
-        segTree[now].val=c;
-        segTree[now].sum=1;
+        segTree[now].laz=c;
+        segTree[now].val=(1<<c);
         return ;
     }
     pushdown(now);
     int mid=(l+r)/2;
-    if(l<=mid) update(l,mid,ll,rr,now*2);
-    if(mid<r) update(mid+1,r,ll,rr,now*2+1);
-    pushup(now);
+    if(ll<=mid) update(l,mid,ll,rr,now*2,c);
+    if(mid<rr) update(mid+1,r,ll,rr,now*2+1,c);
+    segTree[now].val=segTree[now*2].val|segTree[now*2+1].val;
 }
-
+int getsum(int l,int r,int ll,int rr,int now) {
+    if(l>rr||r<ll) return 0;
+    if(l>=ll&&r<=rr) return segTree[now].val;
+    pushdown(now);
+    int mid=(l+r)/2,ans=0;
+    if(ll<=mid) ans|=getsum(l,mid,ll,rr,now*2);
+    if(mid<rr) ans|=getsum(mid+1,r,ll,rr,now*2+1);
+    return ans;
+}
 signed main() {
     ios::sync_with_stdio(0);
     cin.tie(0);
@@ -55,7 +60,13 @@ signed main() {
         else {
             int a,b;
             cin >> a >> b;
-            getsum();
+            if(a>b) swap(a,b);
+            int s=getsum(1,l,a,b,1),x=0;
+            while(s) {
+                x+=s%2;
+                s/=2;
+            }
+            cout << x << endl;
         }
     }
     return 0;
