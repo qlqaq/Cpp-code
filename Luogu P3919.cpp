@@ -16,7 +16,7 @@ signed main() {
         cin >> v >> op >> p;
         if(op==1) {
             cin >> c;
-
+            
         }
         else {
             
